@@ -1,0 +1,8 @@
+{
+    "require": {
+        "nategood/httpful": "^0.2.19",
+        "sunra/php-simple-html-dom-parser": "^1.5",
+        "league/flysystem": "^1.0",
+        "di3/benchmark": "dev-stable"
+    }
+}
