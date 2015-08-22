@@ -116,6 +116,10 @@ $this->package_path2 = $this->repository_path."/packages/%package%.json";
         $filesystem->get($this->repository_path.'/packages.json',$file);
         $data = $file->read();
         $data = json_decode($data,TRUE);
+
+        $filesystem->get('404Packages.txt',$file);
+        $error_file = $file->read();
+        $error_file_array = explode("\r\n",$error_file);
         $providers = array_keys($data['provider-includes']);
 
          foreach($providers as $provider){
@@ -124,33 +128,41 @@ $this->package_path2 = $this->repository_path."/packages/%package%.json";
              $provider_array = json_decode($provider_json,TRUE);
 
              $packages = array_keys($provider_array['providers']);
-
+$count = count($packages);
 
              $array = array();
              foreach($packages as $package){
                  $array[$package] = str_replace("%package%",$package,$this->package_url);
                  $array[$package] = str_replace("%hash%",$provider_array['providers'][$package]['sha256'],$array[$package]);
              }
+$i=0;
              foreach($array as $package => $json_url){
-
+$i++;
+echo $i.'/'.$count.' ';
                  $composer_url = $json_url;
                  $package_path = str_replace("%package%",$package,$this->package_path2);
-//echo $package_path." ".hash_file('sha256',$package_path)." ".$provider_array['providers'][$package]['sha256'];exit;
-                 if(hash_file('sha256',$package_path) == $provider_array['providers'][$package]['sha256'] ){
-                     echo "Skip ".$package ."\r\n";
+                 if( in_array($provider_array['providers'][$package]['sha256'],$error_file_array) || @hash_file('sha256',$package_path) == $provider_array['providers'][$package]['sha256'] ){
+//                     echo "Skip ".$package ."\r\n";
                      continue;
                  }
 
-
                  try{
-unlink($package_path);
+@unlink($package_path);
 echo $composer_url;
                      $result = HttpSend($composer_url);
+
+$data = json_decode($result->raw_body,TRUE);
+if($result->code == '404'|| (!isset($data['name']) && $result->code=='200')){
+echo '404';
+$p404 = fopen('404Packages.txt','a');
+fwrite($p404,$provider_array['providers'][$package]['sha256']."\r\n");
+echo $provider_array['providers'][$package]['sha256']."\r\n";
+fclose($p404);
+continue;
+}
                      $filesystem->get($package_path,$file);
                      $file->write($result->raw_body);
                      echo  "Fetching ".$composer_url. "\r\n";
-
-
                  }catch (exception $e){
                      echo "Error ".$package ."\r\n";
                  }
