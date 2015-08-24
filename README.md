@@ -1,6 +1,6 @@
 # SPJson4C
 a project to make static packagist composer server mirror 
-
+##建立composer服务器最快最好的方案
 
 as composer users know when composer do his job,he'll get meta data from the json packages on the remote server to solve dependents
 so the faster you get the packges the fast you finish all your composer job.
