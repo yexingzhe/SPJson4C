@@ -7,7 +7,6 @@
  */
 set_time_limit(0);
 require_once("vendor/autoload.php");
-
 define('USE_PROXY',0);
 function HttpSendLong($url)
 {
@@ -51,7 +50,7 @@ class BuildComposer
 
 
         $this->repository_path = 'repository/packagist';
-        $this->package_path = "/packages/%package%.json";
+        $this->package_path = "/pub/repository/packagist/packages/%package%.json";
 $this->package_path2 = $this->repository_path."/packages/%package%.json"; 
    }
 
@@ -117,12 +116,11 @@ $this->package_path2 = $this->repository_path."/packages/%package%.json";
         $data = $file->read();
         $data = json_decode($data,TRUE);
 
-        $filesystem->get('404Packages.txt',$file);
-        $error_file = $file->read();
-        $error_file_array = explode("\r\n",$error_file);
+        $error_file_array = array();
         $providers = array_keys($data['provider-includes']);
 
          foreach($providers as $provider){
+if($provider != 'p/provider-'.$GLOBALS['argv'][1].'.json')continue;
              $filesystem->get($this->repository_path.'/'.$provider,$file);
              $provider_json = $file->read();
              $provider_array = json_decode($provider_json,TRUE);
@@ -168,7 +166,6 @@ $p404 = fopen('404PackagesName.txt','a');
 fwrite($p404,$package."\r\n");
 echo $package."\r\n";
 fclose($p404);
-sleep(1);
 continue;
 }
                  }catch (exception $e){
@@ -181,5 +178,6 @@ continue;
     }
 }
 
-BuildComposer::object()->init();
-//BuildComposer::object()->getjson();
+if(!isset($argv[1])) exit;
+//BuildComposer::object()->init();
+BuildComposer::object()->getjson();
